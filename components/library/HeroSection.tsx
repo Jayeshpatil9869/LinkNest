@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ArrowRight, Check, Link2 } from "lucide-react";
@@ -16,10 +16,19 @@ type HeroSectionProps = {
   onAddUrl: (url: string) => void;
 };
 
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  const tag = target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+  return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+}
+
 export function HeroSection({ onAddUrl }: HeroSectionProps) {
   const [url, setUrl] = useState("");
   const [sending, setSending] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const eyebrowRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -27,6 +36,59 @@ export function HeroSection({ onAddUrl }: HeroSectionProps) {
   const flashRef = useRef<HTMLDivElement>(null);
   const footnoteRef = useRef<HTMLParagraphElement>(null);
   const busyRef = useRef(false);
+
+  useEffect(() => {
+    const focusPasteField = () => {
+      const input = inputRef.current;
+      if (!input || input.disabled) return;
+      input.focus({ preventScroll: true });
+      input.select();
+    };
+
+    // Land focus on the paste bar as soon as the page opens.
+    const boot = window.setTimeout(focusPasteField, 80);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const isPaste =
+        (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "v";
+      if (!isPaste) return;
+      if (isEditableTarget(event.target) && event.target !== inputRef.current) {
+        return;
+      }
+      // Focus before paste so Ctrl+V lands in the URL field.
+      focusPasteField();
+    };
+
+    const onPaste = (event: ClipboardEvent) => {
+      if (isEditableTarget(event.target) && event.target !== inputRef.current) {
+        return;
+      }
+      const text = event.clipboardData?.getData("text")?.trim();
+      if (!text) return;
+      event.preventDefault();
+      setUrl(text);
+      focusPasteField();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") focusPasteField();
+    };
+
+    const onFocusPaste = () => focusPasteField();
+
+    window.addEventListener("keydown", onKeyDown, true);
+    document.addEventListener("paste", onPaste, true);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("linknest:focus-paste", onFocusPaste);
+
+    return () => {
+      window.clearTimeout(boot);
+      window.removeEventListener("keydown", onKeyDown, true);
+      document.removeEventListener("paste", onPaste, true);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("linknest:focus-paste", onFocusPaste);
+    };
+  }, []);
 
   useGSAP(
     () => {
@@ -94,6 +156,10 @@ export function HeroSection({ onAddUrl }: HeroSectionProps) {
       busyRef.current = false;
       if (bar) gsap.set(bar, { clearProps: "scale" });
       if (flash) gsap.set(flash, { opacity: 0 });
+      // Ready for the next paste after save starts.
+      window.setTimeout(() => {
+        inputRef.current?.focus({ preventScroll: true });
+      }, 120);
     };
 
     if (reduced || !bar) {
@@ -194,12 +260,16 @@ export function HeroSection({ onAddUrl }: HeroSectionProps) {
                 />
                 <span className="sr-only">Website URL</span>
                 <input
+                  ref={inputRef}
                   value={url}
                   onChange={(event) => setUrl(event.target.value)}
                   placeholder="https://paste-a-url-here.com"
                   autoComplete="url"
                   inputMode="url"
+                  enterKeyHint="go"
+                  autoFocus
                   disabled={sending}
+                  aria-label="Paste a website URL"
                   className="w-full min-w-0 bg-transparent text-[15px] text-[var(--color-ink)] outline-none ring-0 placeholder:text-[var(--color-stone)] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-70"
                 />
               </label>

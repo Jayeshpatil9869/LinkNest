@@ -33,6 +33,9 @@ export function LibraryExperience() {
     setAddOpen(false);
     setInitialUrl("");
     setAutoSubmit(false);
+    window.setTimeout(() => {
+      window.dispatchEvent(new Event("linknest:focus-paste"));
+    }, 80);
   };
 
   const onDeleted = (id: string) => {
