@@ -1,26 +1,340 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /*
+   * Mesh drift palette (from hero ShaderBackground UNIFORMS):
+   * white  #FAFAFA  |  gold  #F7D797  |  peach  #F7C097
+   */
+  --color-mesh-white: #fafafa;
+  --color-mesh-gold: #f7d797;
+  --color-mesh-peach: #f7c097;
+
+  --color-cloud: #fffbf6;
+  --color-fog: #ecd9c3;
+  --color-stone: #a78d74;
+  --color-slate: #3f342c;
+  --color-ink: #1c1612;
+  --color-accent: #e9a56f;
+
+  --background: #fff7ef;
+  --surface: rgba(255, 251, 246, 0.72);
+  --surface-strong: rgba(255, 251, 246, 0.9);
+
+  --text-primary: #1c1612;
+  --text-secondary: #3f342c;
+  --text-muted: #a78d74;
+
+  --border: rgba(63, 52, 44, 0.14);
+  --border-strong: rgba(63, 52, 44, 0.24);
+  --border-hover: rgba(63, 52, 44, 0.3);
+  --border-glass: rgba(255, 251, 246, 0.55);
+  --border-glass-strong: rgba(255, 255, 255, 0.72);
+
+  --shadow-sm: 0 4px 16px rgba(28, 22, 18, 0.05);
+  --shadow-md: 0 12px 32px rgba(28, 22, 18, 0.08);
+  --shadow-lg: 0 24px 70px rgba(28, 22, 18, 0.12);
+  --shadow-glass:
+    0 8px 32px rgba(28, 22, 18, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --radius-pill: 999px;
+
+  --glass-bg: rgba(255, 251, 246, 0.42);
+  --glass-bg-strong: rgba(255, 251, 246, 0.62);
+  --glass-bg-soft: rgba(255, 251, 246, 0.28);
+  --glass-blur: 22px;
+  --glass-blur-strong: 32px;
+  --glass-saturate: 140%;
+
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-micro: 180ms;
+  --duration-component: 380ms;
+  --duration-section: 650ms;
+  --duration-page: 800ms;
+
+  --font-chillax: "Chillax", ui-sans-serif, system-ui, sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Responsive shell + type */
+  --page-x: max(16px, env(safe-area-inset-left, 0px));
+  --page-x-end: max(16px, env(safe-area-inset-right, 0px));
+  --page-max: 1680px;
+  --nav-top: max(12px, env(safe-area-inset-top, 0px));
+  --text-hero: clamp(2.35rem, 9.5vw, 4.5rem);
+  --text-section: clamp(1.35rem, 3.2vw, 1.75rem);
+  --text-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  --glass-blur-mobile: 18px;
+  --glass-blur-nav-mobile: 28px;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --page-x: 24px;
+    --page-x-end: 24px;
+    --nav-top: max(16px, env(safe-area-inset-top, 0px));
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --page-x: 40px;
+    --page-x-end: 40px;
+    --nav-top: max(20px, env(safe-area-inset-top, 0px));
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --page-x: 48px;
+    --page-x-end: 48px;
+  }
 }
 
 @theme inline {
+  --color-cloud: var(--color-cloud);
+  --color-fog: var(--color-fog);
+  --color-stone: var(--color-stone);
+  --color-slate: var(--color-slate);
+  --color-ink: var(--color-ink);
+  --color-accent: var(--color-accent);
+  --color-mesh-white: var(--color-mesh-white);
+  --color-mesh-gold: var(--color-mesh-gold);
+  --color-mesh-peach: var(--color-mesh-peach);
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-border: var(--border);
+  --font-sans: var(--font-chillax);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+html.lenis,
+html.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background:
+    radial-gradient(
+      1100px 560px at 12% -8%,
+      rgba(247, 215, 151, 0.55),
+      transparent 58%
+    ),
+    radial-gradient(
+      900px 520px at 92% 0%,
+      rgba(247, 192, 151, 0.42),
+      transparent 52%
+    ),
+    radial-gradient(
+      700px 420px at 50% 100%,
+      rgba(250, 250, 250, 0.7),
+      transparent 55%
+    ),
+    var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-chillax);
+  font-size: var(--text-body);
+  font-feature-settings: "ss01" on;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-shell {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-left: var(--page-x);
+  padding-right: var(--page-x-end);
+}
+
+::selection {
+  background: rgba(247, 192, 151, 0.45);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur))
+    saturate(var(--glass-saturate));
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-glass);
+}
+
+.glass-panel-soft {
+  background: var(--glass-bg-soft);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid rgba(255, 251, 246, 0.4);
+  box-shadow: var(--shadow-glass);
+}
+
+.glass-panel-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(150%);
+  border: 1px solid var(--border-glass-strong);
+  box-shadow: var(--shadow-glass), var(--shadow-md);
+}
+
+.glass-navbar {
+  /* Blur MUST live on this element — not a ::before inside isolation,
+     or the backdrop samples an empty stacking context and never frosts the page. */
+  position: relative;
+  background: rgba(255, 251, 246, 0.48);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow:
+    0 10px 40px rgba(28, 22, 18, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  transition:
+    background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-navbar.is-scrolled {
+  background: rgba(255, 251, 246, 0.58);
+  -webkit-backdrop-filter: blur(56px) saturate(190%);
+  backdrop-filter: blur(56px) saturate(190%);
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 14px 44px rgba(28, 22, 18, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 767px) {
+  .glass-panel,
+  .glass-panel-soft,
+  .glass-panel-strong {
+    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(130%);
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(130%);
+  }
+
+  .glass-navbar {
+    background: rgba(255, 251, 246, 0.55);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    backdrop-filter: blur(28px) saturate(170%);
+  }
+
+  .glass-navbar.is-scrolled {
+    background: rgba(255, 251, 246, 0.68);
+    -webkit-backdrop-filter: blur(36px) saturate(180%);
+    backdrop-filter: blur(36px) saturate(180%);
+  }
+
+  .noise-texture {
+    opacity: 0.015;
+  }
+}
+
+@media (min-width: 768px) {
+  .glass-navbar {
+    background: rgba(255, 251, 246, 0.42);
+    -webkit-backdrop-filter: blur(48px) saturate(185%);
+    backdrop-filter: blur(48px) saturate(185%);
+  }
+
+  .glass-navbar.is-scrolled {
+    background: rgba(255, 251, 246, 0.55);
+    -webkit-backdrop-filter: blur(64px) saturate(200%);
+    backdrop-filter: blur(64px) saturate(200%);
+  }
+}
+
+.glass-chip {
+  background: rgba(255, 251, 246, 0.35);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border: 1px solid rgba(255, 251, 246, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .glass-navbar,
+  .glass-navbar.is-scrolled {
+    background: rgba(255, 251, 246, 0.92);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .glass-panel-soft,
+  .glass-panel-strong,
+  .glass-chip,
+  .glass-navbar,
+  .glass-navbar.is-scrolled {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 251, 246, 0.94);
+  }
+}
+
+.section-mesh {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 247, 239, 0.85) 0%,
+    rgba(247, 215, 151, 0.14) 36%,
+    rgba(247, 192, 151, 0.08) 70%,
+    transparent 100%
+  );
+}
+
+.noise-texture {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
