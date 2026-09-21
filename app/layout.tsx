@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: "LinkNest — Visual URL Library",
   description:
     "A premium personal URL library and visual bookmark archive.",
+  applicationName: "LinkNest",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-icon", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

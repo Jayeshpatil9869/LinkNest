@@ -98,22 +98,26 @@ export function LibraryExperience() {
           {isLoading ? <LoadingGrid /> : null}
 
           {isError ? (
-            <div className="glass-panel-soft rounded-[16px] px-5 py-8 text-center">
-              <p className="text-[var(--color-slate)]">
-                The library could not be loaded right now.
-              </p>
-              <button
-                type="button"
-                className="mt-3 text-sm font-medium text-[var(--color-ink)] underline-offset-4 hover:underline"
-                onClick={() => void refetch()}
-              >
-                Try again
-              </button>
-            </div>
+            <Reveal>
+              <div className="glass-panel-soft rounded-[16px] px-5 py-8 text-center">
+                <p className="text-[var(--color-slate)]">
+                  The library could not be loaded right now.
+                </p>
+                <button
+                  type="button"
+                  className="mt-3 text-sm font-medium text-[var(--color-ink)] underline-offset-4 hover:underline"
+                  onClick={() => void refetch()}
+                >
+                  Try again
+                </button>
+              </div>
+            </Reveal>
           ) : null}
 
           {!isLoading && !isError && filtered.length === 0 ? (
-            <EmptyLibrary onAdd={() => openAdd()} hasFilters={hasFilters} />
+            <Reveal>
+              <EmptyLibrary onAdd={() => openAdd()} hasFilters={hasFilters} />
+            </Reveal>
           ) : null}
 
           {!isLoading && !isError && filtered.length > 0 ? (
@@ -126,9 +130,9 @@ export function LibraryExperience() {
         </section>
       </main>
 
-      <footer className="page-shell pb-8 text-center text-xs text-[var(--color-stone)] sm:pb-10 sm:text-sm">
+      <Reveal as="footer" className="page-shell pb-8 text-center text-xs text-[var(--color-stone)] sm:pb-10 sm:text-sm">
         LinkNest · a visual URL archive
-      </footer>
+      </Reveal>
 
       <AddURL
         open={addOpen}

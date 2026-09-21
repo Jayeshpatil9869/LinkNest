@@ -79,12 +79,12 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       options={{
         // Let Lenis own its RAF — most reliable for smooth wheel scrolling.
         autoRaf: true,
-        duration: 1.25,
+        duration: 1.05,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
         syncTouch: false,
-        touchMultiplier: 1.5,
-        wheelMultiplier: 1,
+        touchMultiplier: 1.35,
+        wheelMultiplier: 0.92,
         orientation: "vertical",
         gestureOrientation: "vertical",
       }}

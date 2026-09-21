@@ -225,9 +225,9 @@ textarea:focus-visible {
 }
 
 .glass-navbar {
-  /* Blur MUST live on this element — not a ::before inside isolation,
-     or the backdrop samples an empty stacking context and never frosts the page. */
+  /* Fixed height — never let layout tweens stretch this into a tall glass slab */
   position: relative;
+  box-sizing: border-box;
   background: rgba(255, 251, 246, 0.48);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   backdrop-filter: blur(40px) saturate(180%);
@@ -235,10 +235,6 @@ textarea:focus-visible {
   box-shadow:
     0 10px 40px rgba(28, 22, 18, 0.07),
     inset 0 1px 0 rgba(255, 255, 255, 0.82);
-  transition:
-    background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .glass-navbar.is-scrolled {
@@ -338,3 +334,35 @@ textarea:focus-visible {
   opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
+/* Scroll reveal — CSS only (no per-item GSAP ScrollTriggers) */
+.reveal-motion {
+  --reveal-delay: 0ms;
+  opacity: 0;
+  transform: translate3d(0, 1.25rem, 0);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay);
+  will-change: opacity, transform;
+}
+
+.reveal-motion.is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-motion {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Skip offscreen card work while scrolling a large library */
+.url-card-shell {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
+

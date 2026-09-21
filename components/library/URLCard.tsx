@@ -55,26 +55,6 @@ export function URLCard({
     );
   }, [highlight]);
 
-  const onCardEnter = () => {
-    if (prefersReducedMotion() || window.matchMedia("(max-width: 767px)").matches)
-      return;
-    gsap.to(articleRef.current, {
-      y: -5,
-      duration: MOTION.component,
-      ease: MOTION.easeOut,
-      overwrite: "auto",
-    });
-  };
-
-  const onCardLeave = () => {
-    gsap.to(articleRef.current, {
-      y: 0,
-      duration: MOTION.component,
-      ease: MOTION.easeOut,
-      overwrite: "auto",
-    });
-  };
-
   const copyLink = async (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
@@ -128,10 +108,9 @@ export function URLCard({
       <article
         ref={articleRef}
         id={`url-${record.id}`}
-        onPointerEnter={onCardEnter}
-        onPointerLeave={onCardLeave}
         className={cn(
-          "group relative will-change-transform transition-[opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "group relative transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "motion-safe:md:hover:-translate-y-1",
           highlight &&
             "rounded-[8px] ring-2 ring-black/15 ring-offset-4 ring-offset-[var(--background)]",
           removing && "scale-[0.98] opacity-0",

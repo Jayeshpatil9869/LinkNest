@@ -1,57 +1,64 @@
 "use client";
 
-import { useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 type RevealProps = {
   children: React.ReactNode;
   className?: string;
-  delay?: number;
+  /** Stagger delay in ms (capped by caller). */
+  delayMs?: number;
+  as?: "div" | "section" | "li" | "article" | "footer";
 };
 
-export function Reveal({ children, className, delay = 0 }: RevealProps) {
-  const ref = useRef<HTMLDivElement>(null);
+/**
+ * Lightweight scroll reveal — IntersectionObserver + CSS.
+ * Avoids one GSAP ScrollTrigger per card (which lagged ~50+ items).
+ */
+export function Reveal({
+  children,
+  className,
+  delayMs = 0,
+  as: Tag = "div",
+}: RevealProps) {
+  const ref = useRef<HTMLElement | null>(null);
+  const [visible, setVisible] = useState(false);
 
-  useGSAP(
-    () => {
-      const el = ref.current;
-      if (!el) return;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
 
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduced) {
-        gsap.set(el, { clearProps: "all", opacity: 1, y: 0 });
-        return;
-      }
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setVisible(true);
+      return;
+    }
 
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: 28 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.75,
-          delay,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top 88%",
-            toggleActions: "play none none none",
-            once: true,
-          },
-        },
-      );
-    },
-    { scope: ref, dependencies: [delay] },
-  );
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { root: null, rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div ref={ref} className={cn(className)}>
+    <Tag
+      ref={ref as never}
+      className={cn("reveal-motion", visible && "is-revealed", className)}
+      style={
+        delayMs > 0
+          ? ({ ["--reveal-delay" as string]: `${delayMs}ms` } as React.CSSProperties)
+          : undefined
+      }
+    >
       {children}
-    </div>
+    </Tag>
   );
 }
