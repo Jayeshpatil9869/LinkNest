@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Allow phones / LAN devices to load the Next.js dev server (HMR, assets).
+  allowedDevOrigins: ["192.168.1.6", "127.0.0.1"],
   async rewrites() {
     // On Vercel, /api/* is served by api/index.js (Fastify serverless).
     if (process.env.VERCEL || process.env.NODE_ENV === "production") {

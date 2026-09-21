@@ -50,7 +50,7 @@ export function Reveal({ children, className, delay = 0 }: RevealProps) {
   );
 
   return (
-    <div ref={ref} className={cn(className)} style={{ opacity: 0 }}>
+    <div ref={ref} className={cn(className)}>
       {children}
     </div>
   );

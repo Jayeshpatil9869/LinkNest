@@ -18,11 +18,13 @@ execution: code
 **Objective:** Build LinkNest as a greenfield Next.js App Router frontend: a premium visual URL library with editorial cards, warm monochrome design tokens, selective glassmorphism, intentional Motion, subtle 3D tilt, Supabase persistence, smart URL metadata preview, search/filter, and zero authentication UI.
 
 **Authority hierarchy:**
+
 1. `LinkNest_Master_Design_Build_Prompt.md` (product + visual + acceptance source of truth)
 2. This plan (sequencing, KTDs, file map, verification)
 3. Package versions locked at scaffold time in `package.json`
 
 **Stop conditions:**
+
 - Any work that adds Login/Signup/auth middleware/protected routes
 - Any work that turns the app into a SaaS dashboard, marketing landing, or purple/AI-template look
 - Any new backend stack outside Supabase + Next.js Route Handlers
@@ -188,20 +190,20 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 
 **Data model (`urls`):**
 
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | default gen_random_uuid() |
-| url | text | original paste |
-| normalized_url | text | UNIQUE |
-| title | text | |
-| description | text nullable | |
-| domain | text | |
-| favicon_url | text nullable | |
-| preview_image | text nullable | |
-| category | text nullable | enum-like string |
-| tags | text[] nullable | optional |
-| created_at | timestamptz | |
-| updated_at | timestamptz | |
+| Column         | Type            | Notes                     |
+| -------------- | --------------- | ------------------------- |
+| id             | uuid PK         | default gen_random_uuid() |
+| url            | text            | original paste            |
+| normalized_url | text            | UNIQUE                    |
+| title          | text            |                           |
+| description    | text nullable   |                           |
+| domain         | text            |                           |
+| favicon_url    | text nullable   |                           |
+| preview_image  | text nullable   |                           |
+| category       | text nullable   | enum-like string          |
+| tags           | text[] nullable | optional                  |
+| created_at     | timestamptz     |                           |
+| updated_at     | timestamptz     |                           |
 
 ### Implementation Constraints
 
@@ -233,20 +235,20 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 
 ### Unit Index
 
-| U-ID | Title | Primary files | Depends on |
-|---|---|---|---|
-| U1 | Scaffold Next.js app + tooling | `package.json`, `app/`, `tsconfig.json` | — |
-| U2 | Design tokens, Chillax, base providers | `app/globals.css`, `app/layout.tsx`, `public/fonts/` | U1 |
-| U3 | Supabase schema + server client | `supabase/migrations/`, `lib/supabase/` | U1 |
-| U4 | URL domain libs + API routes | `lib/url/`, `app/api/urls/` | U3 |
-| U5 | Library page shell + navigation | `app/page.tsx`, `components/navigation/` | U2 |
-| U6 | Search, filters, query hooks | `hooks/`, `components/library/URLSearch.tsx`, `URLFilters.tsx` | U4, U5 |
-| U7 | URL card + grid + states | `components/library/URLCard*.tsx`, `URLGrid.tsx`, … | U6 |
-| U8 | Add URL panel + preview flow | `components/library/AddURL.tsx`, preview API | U4, U7 |
-| U9 | Delete + open + context actions | card menu, delete confirm, toasts | U7, U8 |
-| U10 | Motion system + 3D tilt + depth | `components/motion/`, `hooks/useCardTilt.ts` | U7–U9 |
-| U11 | Responsive, a11y, performance pass | cross-cutting | U10 |
-| U12 | Visual QA + acceptance checklist | docs notes / fixes | U11 |
+| U-ID | Title                                  | Primary files                                                  | Depends on |
+| ---- | -------------------------------------- | -------------------------------------------------------------- | ---------- |
+| U1   | Scaffold Next.js app + tooling         | `package.json`, `app/`, `tsconfig.json`                        | —          |
+| U2   | Design tokens, Chillax, base providers | `app/globals.css`, `app/layout.tsx`, `public/fonts/`           | U1         |
+| U3   | Supabase schema + server client        | `supabase/migrations/`, `lib/supabase/`                        | U1         |
+| U4   | URL domain libs + API routes           | `lib/url/`, `app/api/urls/`                                    | U3         |
+| U5   | Library page shell + navigation        | `app/page.tsx`, `components/navigation/`                       | U2         |
+| U6   | Search, filters, query hooks           | `hooks/`, `components/library/URLSearch.tsx`, `URLFilters.tsx` | U4, U5     |
+| U7   | URL card + grid + states               | `components/library/URLCard*.tsx`, `URLGrid.tsx`, …            | U6         |
+| U8   | Add URL panel + preview flow           | `components/library/AddURL.tsx`, preview API                   | U4, U7     |
+| U9   | Delete + open + context actions        | card menu, delete confirm, toasts                              | U7, U8     |
+| U10  | Motion system + 3D tilt + depth        | `components/motion/`, `hooks/useCardTilt.ts`                   | U7–U9      |
+| U11  | Responsive, a11y, performance pass     | cross-cutting                                                  | U10        |
+| U12  | Visual QA + acceptance checklist       | docs notes / fixes                                             | U11        |
 
 ### U1. Scaffold Next.js app and project tooling
 
@@ -255,15 +257,18 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R1 (route surface ready), R23
 
 **Files:**
+
 - Create: `package.json`, `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`, `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `components/**` (placeholders ok), `lib/utils.ts`, `types/url.ts`, `.env.example`, `.gitignore`
 - Avoid: any `app/login`, `app/signup`, auth middleware
 
 **Approach:**
+
 - `create-next-app` with TypeScript, App Router, Tailwind, ESLint, `src/` **not** used (keep root `app/` as specified).
 - Add dependencies: `@supabase/supabase-js`, `@tanstack/react-query`, `react-hook-form`, `@hookform/resolvers`, `zod`, `sonner`, `lucide-react`, `motion`, `clsx`/`tailwind-merge` as needed.
 - Stub empty folders matching §10.
 
 **Test scenarios:**
+
 - `pnpm`/`npm run build` succeeds on the stub page.
 - No auth routes exist in `app/`.
 
@@ -278,15 +283,18 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R11, R12, R13, R14, R15
 
 **Files:**
+
 - Create/modify: `public/fonts/Chillax-*.woff2` (user-supplied), `app/globals.css`, `app/layout.tsx`, `components/providers/AppProviders.tsx`, `components/ui/{Button,Input,GlassPanel,Tooltip,Modal}.tsx`
 
 **Approach:**
+
 - Map Cloud/Fog/Stone/Slate/Ink + surface/text/border tokens exactly from §08.
 - Shadow/glass/radius/spacing/motion CSS variables from §§45–47, §60.
 - Minimal UI primitives using tokens only; GlassPanel encodes the glass recipe from §09.
 - `AppProviders` wraps TanStack Query + Sonner.
 
 **Test scenarios:**
+
 - Computed `--color-cloud` equals `#F2EFEC`.
 - Body text uses Chillax; no Inter/Roboto/Arial as primary.
 
@@ -311,17 +319,20 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R2, R3, R4, R7
 
 **Files:**
+
 - Create: `types/url.ts`, `lib/url/normalize.ts`, `lib/url/validation.ts`, `lib/url/metadata.ts`
 - Create: `app/api/urls/route.ts` (GET list, POST create), `app/api/urls/[id]/route.ts` (DELETE, optional PATCH), `app/api/urls/preview/route.ts`
 - Test: `lib/url/normalize.test.ts`, `lib/url/validation.test.ts`
 
 **Approach:**
+
 - Zod schemas shared between API and form.
 - GET supports optional `q` and `category` query params (server filter) but client-side filter is also acceptable for small datasets — pick **client filter after full GET** for v1 simplicity unless list grows; document choice in code comment.
 - POST create: normalize → duplicate check → insert → return row or `409` with existing row.
 - Preview: validate URL → fetch metadata → return DTO; never write DB.
 
 **Interfaces (produce):**
+
 - `normalizeUrl(input: string): string`
 - `urlInputSchema` / `UrlRecord` type matching DB columns
 - `GET /api/urls` → `{ urls: UrlRecord[] }`
@@ -330,6 +341,7 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 - `DELETE /api/urls/:id` → `204`
 
 **Test scenarios:**
+
 - Normalization strips `utm_source` and lowercases host.
 - Invalid URL fails Zod.
 - Duplicate POST returns 409 with existing entity.
@@ -346,16 +358,19 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R1, R6, R9 (empty shell), storytelling copy §30
 
 **Files:**
+
 - Modify: `app/page.tsx`
 - Create: `components/navigation/Navbar.tsx`, `components/navigation/MobileNav.tsx`, `components/library/LibraryIntro.tsx`
 - Create: `app/library/page.tsx` (redirect)
 
 **Approach:**
+
 - Compact glass nav; brand “LinkNest” as primary identity signal in the library header (not only nav text).
 - Intro line tone: collection / things worth keeping — subtle, not marketing hero bloat.
 - Scroll behavior: nav can gain stronger glass after scroll (§14) via simple scroll listener / Motion.
 
 **Test scenarios:**
+
 - `/` shows nav + intro regions with landmarks/`h1`.
 - `/library` redirects to `/`.
 - No auth links in nav.
@@ -371,14 +386,17 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R7, R8, R9
 
 **Files:**
+
 - Create: `hooks/useUrls.ts`, `hooks/useUrlFilters.ts`, `components/library/URLSearch.tsx`, `components/library/URLFilters.tsx`
 
 **Approach:**
+
 - `useUrls` queries `GET /api/urls`.
 - `useUrlFilters` holds search string + active chip; derives filtered list memo-free unless repo adopts React Compiler — follow local convention; otherwise simple derive in render is fine for hundreds of items.
 - Filter chips styled per §17 (Ink selected, Fog border unselected).
 
 **Test scenarios:**
+
 - Search “design” narrows visible set by title/domain/description.
 - Category chip “Tools” shows only `category === "Tools"`.
 - “Recent” orders by newest first.
@@ -394,15 +412,18 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R5, R6, R9, R11–R14, R21
 
 **Files:**
+
 - Create: `components/library/URLCard.tsx`, `URLCardMedia.tsx`, `URLCardMeta.tsx`, `URLGrid.tsx`, `EmptyLibrary.tsx`, `LoadingGrid.tsx`, `URLCardFallback.tsx`
 
 **Approach:**
+
 - Media-dominant card; domain micro label; Chillax title; muted description clamp.
 - Grid: CSS grid 3/2/1; slight masonry feel via optional featured span or varied media aspect — keep predictable to avoid jank (§24).
 - Fallback media: geometric warm composition + favicon + domain.
 - Open control: external link with `rel="noopener noreferrer"`.
 
 **Test scenarios:**
+
 - Missing `preview_image` never shows broken icon.
 - Loading skeleton matches grid columns.
 - Empty state copy matches calm archive tone.
@@ -418,16 +439,19 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R3, R4, R9, R10 (toast on save), R13
 
 **Files:**
+
 - Create: `components/library/AddURL.tsx`, `hooks/useAddUrl.ts`
 - Modify: Navbar CTA to open modal; `components/ui/Modal.tsx` focus trap
 
 **Approach:**
+
 - RHF + Zod for URL field; optional title/description/category/tags override after preview.
 - State machine UI labels: Analyzing → Preview ready.
 - On 409 duplicate: calm panel content + “View existing” (scroll/highlight card) + Cancel.
 - Save invalidates `["urls"]` query; Sonner success.
 
 **Test scenarios:**
+
 - Valid new URL → preview → save → card appears.
 - Duplicate → no second insert; existing surfaced.
 - Escape and backdrop close modal; focus returns to opener.
@@ -443,15 +467,18 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R2, R10, §50–§51
 
 **Files:**
+
 - Modify: `URLCard.tsx` / small `URLCardMenu.tsx`
 - Create: delete confirm using Modal
 
 **Approach:**
+
 - Three-dot menu: Open, Copy link, Delete.
 - Copy → Lucide check morph / toast.
 - Delete → confirm → `DELETE` API → exit motion → toast.
 
 **Test scenarios:**
+
 - Copy writes clipboard and announces success.
 - Delete removes row from UI and DB.
 - Keyboard can operate menu and confirm.
@@ -467,16 +494,19 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Requirements:** R15–R19, R22 (motion subset)
 
 **Files:**
+
 - Create: `components/motion/Reveal.tsx`, `Parallax.tsx`, `Magnetic.tsx`, `hooks/useCardTilt.ts`, `hooks/usePrefersReducedMotion.ts`
 - Modify: cards, filters, buttons, AddURL modal, grid entrance
 
 **Approach:**
+
 - Shared easing curves via CSS variables / Motion transition presets.
 - Staggered grid entrance once; scroll reveals for intro/sections only.
 - Tilt + pointer highlight on fine pointer only.
 - Disable magnetic/tilt/heavy parallax on touch and reduced motion.
 
 **Test scenarios:**
+
 - Reduced-motion: no tilt, minimal travel.
 - Touch device emulation: tap states work; tilt off.
 - Hover desktop: depth within ±3° and translateY ~-4px.
@@ -494,12 +524,14 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Files:** Cross-cutting; `next.config.ts` image remotePatterns; font `display: swap`; possible dynamic import for tilt
 
 **Approach:**
+
 - Redesign mobile nav intentionally (not scaled desktop).
 - Audit focus rings on Cloud/Ink surfaces for contrast.
 - Modal focus trap + Escape already from U8 — verify.
 - Lighthouse / manual: LCP font & image, CLS from aspect-ratio, JS bundle sanity (no accidental three.js).
 
 **Test scenarios:**
+
 - Breakpoints 1920/1440/1024/768/390/360 layouts correct.
 - Keyboard-only complete add + delete + open.
 - No animation of width/height/top/left in shipped CSS/Motion.
@@ -517,11 +549,13 @@ Matches master prompt §67 checklists: product CRUD + no auth; stack implemented
 **Files:** Fix whatever QA finds; optional short `docs/qa/visual-pass-notes.md` only if useful (skip if empty)
 
 **Approach:**
+
 - Inspect real UI at listed widths.
 - Remove excess glass, bounce, purple, empty hero bloat, identical cards, over-animation.
 - Confirm auth absence one more time (routes, components, copy).
 
 **Test scenarios:**
+
 - Full §67 Product/Technology/Design/Motion/A11y/Perf/Responsive/Visual QA checklists.
 
 **Verification:** Plan Definition of Done satisfied; ready to ship.
@@ -547,6 +581,7 @@ curl -s -X POST http://localhost:3000/api/urls/preview -H "content-type: applica
 ```
 
 **Quality gates:**
+
 - Unit tests for normalize/validate must pass before U8.
 - `next build` must pass before U12 sign-off.
 - Manual a11y keyboard pass required (no automated a11y gate yet — add `axe` later if desired).
@@ -559,6 +594,7 @@ curl -s -X POST http://localhost:3000/api/urls/preview -H "content-type: applica
 ## Definition of Done
 
 **Global:**
+
 - All Implementation Units U1–U12 complete or explicitly waived in writing by the user
 - Master prompt §67 checklists satisfied
 - No auth surfaces remain
@@ -591,11 +627,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 ### Mapping to master prompt phases
 
-| Master §64 phase | Units |
-|---|---|
+| Master §64 phase               | Units                                            |
+| ------------------------------ | ------------------------------------------------ |
 | Research / Deconstruct / Story | Done in this plan (Product + Planning Contracts) |
-| Design system | U2 |
-| Compose + Implement | U5–U9 |
-| Animate + Depth | U10 |
-| Responsive / A11y / Perf | U11 |
-| Visual QA | U12 |
+| Design system                  | U2                                               |
+| Compose + Implement            | U5–U9                                            |
+| Animate + Depth                | U10                                              |
+| Responsive / A11y / Perf       | U11                                              |
+| Visual QA                      | U12                                              |

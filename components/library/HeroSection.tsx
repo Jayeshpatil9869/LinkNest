@@ -147,21 +147,19 @@ export function HeroSection({ onAddUrl }: HeroSectionProps) {
         <p
           ref={eyebrowRef}
           className="text-[10px] font-semibold tracking-[0.2em] text-[var(--color-stone)] uppercase sm:text-[11px] sm:tracking-[0.22em]"
-          style={{ opacity: 0 }}
         >
           Your collection
         </p>
         <h1
           ref={titleRef}
           className="mt-3 font-semibold tracking-tight text-[var(--color-ink)] sm:mt-4"
-          style={{ opacity: 0, fontSize: "var(--text-hero)", lineHeight: 1.05 }}
+          style={{ fontSize: "var(--text-hero)", lineHeight: 1.05 }}
         >
           LinkNest
         </h1>
         <p
           ref={subtitleRef}
           className="mt-3 max-w-[34rem] text-[15px] leading-relaxed text-[var(--color-slate)] sm:mt-4 sm:text-lg"
-          style={{ opacity: 0 }}
         >
           Paste a URL worth remembering. Build a calm visual archive of the
           places you return to.
@@ -170,7 +168,6 @@ export function HeroSection({ onAddUrl }: HeroSectionProps) {
         <div
           ref={barRef}
           className="relative mt-7 w-full max-w-xl sm:mt-10 sm:max-w-2xl"
-          style={{ opacity: 0 }}
         >
           <div
             ref={flashRef}
@@ -231,7 +228,6 @@ export function HeroSection({ onAddUrl }: HeroSectionProps) {
         <p
           ref={footnoteRef}
           className="mt-3 max-w-sm text-[11px] leading-relaxed tracking-wide text-[var(--color-stone)] sm:mt-4 sm:text-xs"
-          style={{ opacity: 0 }}
         >
           No account needed — save, search, and browse your visual library.
         </p>
