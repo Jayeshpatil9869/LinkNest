@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/navigation/Navbar";
 import { HeroSection } from "@/components/library/HeroSection";
@@ -37,6 +37,28 @@ export function LibraryExperience() {
       window.dispatchEvent(new Event("linknest:focus-paste"));
     }, 80);
   };
+
+  useEffect(() => {
+    const handleOpenAdd = (e: Event) => {
+      const customEvent = e as CustomEvent<{
+        url?: string;
+        autoSubmit?: boolean;
+      }>;
+      if (customEvent.detail) {
+        openAdd(
+          customEvent.detail.url || "",
+          Boolean(customEvent.detail.autoSubmit),
+        );
+      } else {
+        openAdd();
+      }
+    };
+
+    window.addEventListener("linknest:open-add", handleOpenAdd);
+    return () => {
+      window.removeEventListener("linknest:open-add", handleOpenAdd);
+    };
+  }, []);
 
   const onDeleted = (id: string) => {
     queryClient.setQueryData<UrlRecord[]>(["urls"], (current) =>

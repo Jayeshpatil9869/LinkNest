@@ -366,3 +366,30 @@ textarea:focus-visible {
   contain-intrinsic-size: auto 320px;
 }
 
+/* PWA & Mobile Touch Polish */
+@media all and (display-mode: standalone) {
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    overscroll-behavior-y: none;
+  }
+  
+  /* Enable text selection inside input fields & editable areas */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+
+  /* Extra safe area bottom padding for standalone PWA navigation */
+  footer {
+    padding-bottom: max(2rem, calc(env(safe-area-inset-bottom, 0px) + 1.5rem)) !important;
+  }
+}
+
+/* Fast tap response and clean touch interaction */
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+

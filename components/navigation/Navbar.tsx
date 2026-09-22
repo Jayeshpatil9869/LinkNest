@@ -3,20 +3,21 @@
 import { useEffect, useState } from "react";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { Button } from "@/components/ui/Button";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePWAContext } from "@/components/pwa/PWAProvider";
 
 type NavbarProps = {
   onAdd: () => void;
 };
 
 /**
- * CSS-driven navbar — no GSAP layout tweens.
- * GSAP padding/maxWidth morphs were expanding the bar into a tall glass slab on reload.
+ * CSS-driven navbar with PWA installation support.
  */
 export function Navbar({ onAdd }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [compact, setCompact] = useState(false);
+  const { canInstall, isStandalone, promptInstall } = usePWAContext();
 
   useEffect(() => {
     const sync = () => {
@@ -48,7 +49,7 @@ export function Navbar({ onAdd }: NavbarProps) {
           "glass-navbar pointer-events-auto mx-auto flex h-12 w-full items-center justify-between gap-2 sm:h-[3.25rem]",
           "transition-[max-width,border-radius,padding,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           compact
-            ? "is-scrolled max-w-[min(100%,20rem)] rounded-full px-3.5 sm:max-w-[26.25rem] sm:px-4"
+            ? "is-scrolled max-w-[min(100%,22rem)] rounded-full px-3.5 sm:max-w-[28rem] sm:px-4"
             : "max-w-[min(100%,1680px)] rounded-[16px] px-3 sm:rounded-[18px] sm:px-4",
         )}
       >
@@ -84,6 +85,30 @@ export function Navbar({ onAdd }: NavbarProps) {
           >
             Library
           </a>
+
+          {canInstall && !isStandalone && (
+            <Button
+              variant="soft"
+              size="sm"
+              className={cn(
+                "rounded-full gap-1.5 text-xs text-[var(--color-ink)]",
+                compact && "min-h-9 px-2.5",
+              )}
+              onClick={() => void promptInstall()}
+              aria-label="Install LinkNest app"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span
+                className={cn(
+                  "overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-300",
+                  compact ? "max-w-0 opacity-0" : "max-w-[6rem] opacity-100",
+                )}
+              >
+                Install App
+              </span>
+            </Button>
+          )}
+
           <Button
             onClick={onAdd}
             size="sm"
@@ -103,6 +128,17 @@ export function Navbar({ onAdd }: NavbarProps) {
         </nav>
 
         <div className="flex items-center gap-1.5 md:hidden">
+          {canInstall && !isStandalone && (
+            <Button
+              variant="soft"
+              size="sm"
+              className="min-h-9 w-9 rounded-full px-0"
+              onClick={() => void promptInstall()}
+              aria-label="Install App"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             onClick={onAdd}
             size="sm"
@@ -130,15 +166,28 @@ export function Navbar({ onAdd }: NavbarProps) {
         <GlassPanel
           id="mobile-nav"
           tone="strong"
-          className="pointer-events-auto mx-auto mt-2 w-full max-w-full rounded-[16px] p-2 md:hidden"
+          className="pointer-events-auto mx-auto mt-2 w-full max-w-full space-y-1 rounded-[16px] p-2 md:hidden"
         >
           <a
             href="#library"
-            className="block rounded-[12px] px-3 py-3 text-sm text-[var(--color-slate)]"
+            className="block rounded-[12px] px-3 py-3 text-sm text-[var(--color-slate)] hover:bg-[rgba(63,52,44,0.06)]"
             onClick={() => setMenuOpen(false)}
           >
             Library
           </a>
+          {canInstall && !isStandalone && (
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-[12px] px-3 py-3 text-left text-sm font-medium text-[var(--color-ink)] hover:bg-[rgba(63,52,44,0.06)]"
+              onClick={() => {
+                setMenuOpen(false);
+                void promptInstall();
+              }}
+            >
+              <Download className="h-4 w-4" />
+              <span>Install LinkNest App</span>
+            </button>
+          )}
         </GlassPanel>
       ) : null}
     </header>

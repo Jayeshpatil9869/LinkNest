@@ -1,0 +1,73 @@
+import type { MetadataRoute } from "next";
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "LinkNest — Visual URL Library",
+    short_name: "LinkNest",
+    description: "A premium personal URL library and visual bookmark archive.",
+    start_url: "/?source=pwa",
+    scope: "/",
+    display: "standalone",
+    orientation: "portrait-primary",
+    background_color: "#FFF7EF",
+    theme_color: "#FFF7EF",
+    categories: ["productivity", "utilities", "design"],
+    icons: [
+      {
+        src: "/icons/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-192-maskable.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-512-maskable.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+    shortcuts: [
+      {
+        name: "Add New URL",
+        short_name: "Add URL",
+        description: "Quickly save a new bookmark to your library",
+        url: "/?action=add",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+      },
+      {
+        name: "Browse Library",
+        short_name: "Library",
+        description: "Search and browse your visual links",
+        url: "/#library",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+      },
+    ],
+    // Web Share Target API: enables sharing links directly into LinkNest
+    share_target: {
+      action: "/",
+      method: "GET",
+      params: {
+        title: "title",
+        text: "text",
+        url: "url",
+      },
+    },
+  };
+}

@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Toaster } from "sonner";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 
+import { PWAProvider } from "@/components/pwa/PWAProvider";
+
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
@@ -20,7 +22,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SmoothScrollProvider>{children}</SmoothScrollProvider>
+      <PWAProvider>
+        <SmoothScrollProvider>{children}</SmoothScrollProvider>
+      </PWAProvider>
       <Toaster
         position="bottom-right"
         toastOptions={{
