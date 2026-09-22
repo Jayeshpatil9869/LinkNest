@@ -11,7 +11,7 @@ type URLCardMediaProps = {
   className?: string;
 };
 
-/** Awwwards-style landscape preview (~3:2), soft 6px radius */
+/** Awwwards-style landscape preview (~3:2), soft 10px radius */
 export function URLCardMedia({ record, className }: URLCardMediaProps) {
   const src = resolvePreviewImage(record.url, record.previewImage);
   const [failed, setFailed] = useState(false);
@@ -25,7 +25,7 @@ export function URLCardMedia({ record, className }: URLCardMediaProps) {
   return (
     <div
       className={cn(
-        "relative aspect-[3/2] overflow-hidden rounded-[6px] bg-[#ececec]",
+        "relative aspect-[3/2] overflow-hidden rounded-[10px] bg-[rgba(236,217,195,0.35)] border border-[var(--border)]",
         className,
       )}
     >
@@ -46,7 +46,7 @@ export function URLCardMedia({ record, className }: URLCardMediaProps) {
       ) : null}
 
       {!loaded && !failed ? (
-        <div className="absolute inset-0 animate-pulse bg-[#e8e8e8]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[rgba(255,251,246,0.5)] to-transparent animate-pulse" />
       ) : null}
 
       {failed ? <URLCardFallback record={record} /> : null}

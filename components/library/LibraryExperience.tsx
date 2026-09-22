@@ -152,9 +152,50 @@ export function LibraryExperience() {
         </section>
       </main>
 
-      <Reveal as="footer" className="page-shell pb-8 text-center text-xs text-[var(--color-stone)] sm:pb-10 sm:text-sm">
-        LinkNest · a visual URL archive
-      </Reveal>
+      <footer className="page-shell border-t border-[var(--border)] pt-8 pb-12 mt-12 text-center text-xs text-[var(--color-stone)] sm:pt-10 sm:pb-16 sm:text-sm">
+        <div className="mx-auto flex max-w-4xl flex-col items-center justify-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-[var(--color-ink)]">LinkNest</span>
+            <span className="opacity-40" aria-hidden>—</span>
+            <span>Visual URL Library & Editorial Archive</span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 text-xs text-[var(--color-stone)] sm:text-sm">
+            <span>
+              Crafted by{" "}
+              <a
+                href="https://divinescode.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-[var(--color-ink)] underline-offset-4 transition-colors hover:text-[var(--color-accent)] hover:underline"
+              >
+                Divines Code
+              </a>
+            </span>
+            <span className="opacity-40" aria-hidden>•</span>
+            <span>
+              Designed and Developed by{" "}
+              <a
+                href="https://jayeshbpatil.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-[var(--color-ink)] underline-offset-4 transition-colors hover:text-[var(--color-accent)] hover:underline"
+              >
+                Jayesh Patil
+              </a>{" "}
+              &amp;{" "}
+              <a
+                href="https://mahendranagpure.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-[var(--color-ink)] underline-offset-4 transition-colors hover:text-[var(--color-accent)] hover:underline"
+              >
+                Mahendra Nagpure
+              </a>
+            </span>
+          </div>
+        </div>
+      </footer>
 
       <AddURL
         open={addOpen}

@@ -459,6 +459,7 @@ export function ShaderBackground({ className }: { className?: string }) {
       targetPresence = 0
       requestRender()
     }
+    let layoutInitialized = false
     const updateLayout = () => {
       bounds = canvas.getBoundingClientRect()
       needsResize = true
@@ -470,25 +471,31 @@ export function ShaderBackground({ className }: { className?: string }) {
     if (UNIFORMS.cursorEnabled) {
       window.addEventListener("pointermove", onPointerMove, { passive: true })
       window.addEventListener("pointercancel", onPointerLeave)
-      // Intentionally NO scroll listener — getBoundingClientRect on every
-      // Lenis frame was the main scroll lag source.
       window.addEventListener("blur", onPointerLeave)
       document.documentElement.addEventListener("pointerleave", onPointerLeave)
     }
 
-    const resizeObserver = new ResizeObserver(updateLayout)
+    const resizeObserver = new ResizeObserver(() => {
+      if (!layoutInitialized) {
+        layoutInitialized = true
+        updateLayout()
+      } else {
+        updateLayout()
+      }
+    })
     resizeObserver.observe(canvas)
     const intersectionObserver = new IntersectionObserver(
       ([entry]) => {
-        inView = entry?.isIntersecting ?? true
-        if (inView) {
-          bounds = canvas.getBoundingClientRect()
-          needsResize = true
-          requestRender()
-        } else if (raf !== 0) {
-          cancelAnimationFrame(raf)
-          raf = 0
-          lastNow = null
+        const nextInView = entry?.isIntersecting ?? true
+        if (nextInView !== inView) {
+          inView = nextInView
+          if (inView) {
+            requestRender()
+          } else if (raf !== 0) {
+            cancelAnimationFrame(raf)
+            raf = 0
+            lastNow = null
+          }
         }
       },
       // Pause the shader slightly before it leaves the viewport.

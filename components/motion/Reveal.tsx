@@ -13,7 +13,7 @@ type RevealProps = {
 
 /**
  * Lightweight scroll reveal — IntersectionObserver + CSS.
- * Avoids one GSAP ScrollTrigger per card (which lagged ~50+ items).
+ * Prevents FOUC & loading glitches by checking immediate visibility.
  */
 export function Reveal({
   children,
@@ -34,6 +34,13 @@ export function Reveal({
       return;
     }
 
+    // Check if element is already within viewport on initial render
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      setVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
@@ -41,7 +48,7 @@ export function Reveal({
           observer.disconnect();
         }
       },
-      { root: null, rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+      { root: null, rootMargin: "0px 0px -4% 0px", threshold: 0.05 },
     );
 
     observer.observe(el);
