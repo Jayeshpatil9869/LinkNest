@@ -1,4 +1,5 @@
 export type UrlCategory =
+  | "Reference"
   | "Design"
   | "Development"
   | "Inspiration"
@@ -7,6 +8,7 @@ export type UrlCategory =
   | "Resources";
 
 export const URL_CATEGORIES: UrlCategory[] = [
+  "Reference",
   "Design",
   "Development",
   "Inspiration",

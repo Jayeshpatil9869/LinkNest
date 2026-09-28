@@ -12,6 +12,7 @@ const {
   createUrlSchema,
   normalizeCategory,
   previewRequestSchema,
+  updateUrlSchema,
 } = require("../lib/validation");
 
 async function urlsRoutes(fastify) {
@@ -94,11 +95,58 @@ async function urlsRoutes(fastify) {
           return reply.code(409).send({ code: "duplicate", url: dupe });
         }
       }
+      if (error.code === "23514") {
+        return reply.code(400).send({
+          error:
+            "This category is not allowed yet. Run backend/sql/2026-09-28-reference-category.sql in Supabase.",
+        });
+      }
       requestLog(fastify, error);
       return reply.code(500).send({ error: "Failed to create url." });
     }
 
     return reply.code(201).send(rowToRecord(data));
+  });
+
+  fastify.patch("/urls/:id", async (request, reply) => {
+    const parsed = updateUrlSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: parsed.error.issues[0]?.message ?? "Invalid input.",
+      });
+    }
+
+    const { id } = request.params;
+    const patch = { updated_at: new Date().toISOString() };
+    if (parsed.data.category !== undefined) {
+      patch.category = normalizeCategory(parsed.data.category);
+    }
+    if (parsed.data.previewImage !== undefined) {
+      patch.preview_image = parsed.data.previewImage;
+    }
+
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("urls")
+      .update(patch)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      requestLog(fastify, error);
+      if (error.code === "23514") {
+        return reply.code(400).send({
+          error:
+            "This category is not allowed yet. Run backend/sql/2026-09-28-reference-category.sql in Supabase.",
+        });
+      }
+      return reply.code(500).send({ error: "Failed to update url." });
+    }
+    if (!data) {
+      return reply.code(404).send({ error: "Not found." });
+    }
+    return rowToRecord(data);
   });
 
   fastify.delete("/urls/:id", async (request, reply) => {

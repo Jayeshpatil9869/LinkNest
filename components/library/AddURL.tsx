@@ -55,8 +55,9 @@ export function AddURL({
       url: "",
       title: "",
       description: "",
-      category: null,
+      category: "Reference",
       tags: [],
+      coverImage: "",
     },
   });
 
@@ -74,7 +75,7 @@ export function AddURL({
           description: formValues.description || data.description,
           category: normalizeCategory(formValues.category),
           faviconUrl: data.faviconUrl,
-          previewImage: data.previewImage,
+          previewImage: formValues.coverImage?.trim() || data.previewImage,
         }),
       });
 
@@ -144,6 +145,7 @@ export function AddURL({
           description: data.description ?? "",
           category: null,
           tags: [],
+          coverImage: "",
         });
         return;
       }
@@ -175,8 +177,9 @@ export function AddURL({
       url: seed,
       title: "",
       description: "",
-      category: null,
+      category: "Reference",
       tags: [],
+      coverImage: "",
     });
     void analyzeUrl(seed, autoSubmit);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per open+seed
@@ -186,6 +189,12 @@ export function AddURL({
     if (!preview) return;
     await savePreview(preview);
   };
+
+  const coverImage = form.watch("coverImage");
+  const coverPreview =
+    coverImage && /^https?:\/\//i.test(coverImage.trim())
+      ? coverImage.trim()
+      : preview?.previewImage;
 
   const compact = autoSubmit && (flow === "analyzing" || flow === "saving");
 
@@ -277,10 +286,10 @@ export function AddURL({
             <div className="space-y-3">
               <div className="overflow-hidden rounded-[12px] border border-[var(--border)]">
                 <div className="aspect-[16/9] max-h-36">
-                  {preview.previewImage ? (
+                  {coverPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={preview.previewImage}
+                      src={coverPreview}
                       alt=""
                       className="h-full w-full object-cover object-top"
                     />
@@ -332,6 +341,29 @@ export function AddURL({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="coverImage"
+                  className="mb-1.5 block text-sm text-[var(--color-slate)]"
+                >
+                  Cover image URL
+                </label>
+                <Input
+                  id="coverImage"
+                  placeholder="https://…screenshot.png"
+                  autoComplete="off"
+                  {...form.register("coverImage")}
+                />
+                <p className="mt-1.5 text-xs text-[var(--color-stone)]">
+                  Optional. Paste a screenshot URL so you recognize this UI at a glance.
+                </p>
+                {form.formState.errors.coverImage ? (
+                  <p className="mt-1.5 text-sm text-[var(--color-slate)]">
+                    {form.formState.errors.coverImage.message}
+                  </p>
+                ) : null}
               </div>
             </div>
           ) : null}

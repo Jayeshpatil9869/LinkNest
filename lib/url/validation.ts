@@ -25,6 +25,14 @@ export const createUrlSchema = z.object({
   tags: z.array(z.string().trim().min(1).max(40)).max(12).optional(),
   faviconUrl: z.string().url().nullable().optional(),
   previewImage: z.string().url().nullable().optional(),
+  coverImage: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (value) => !value || /^https?:\/\//i.test(value),
+      "Enter an image URL that starts with http:// or https://.",
+    ),
 });
 
 export const previewRequestSchema = z.object({

@@ -2,22 +2,26 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   ArrowUpRight,
   Bookmark,
   Check,
   Copy,
+  ImagePlus,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { UrlRecord } from "@/types/url";
+import { URL_CATEGORIES, type UrlRecord } from "@/types/url";
 import { URLCardMedia } from "@/components/library/URLCardMedia";
 import { URLCardMeta } from "@/components/library/URLCardMeta";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { cn } from "@/lib/utils";
 import { MOTION, prefersReducedMotion } from "@/lib/motion/presets";
+import { normalizeCategory } from "@/lib/url/validation";
 
 type URLCardProps = {
   record: UrlRecord;
@@ -33,12 +37,22 @@ export function URLCard({
   promoted = false,
 }: URLCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [category, setCategory] = useState<string>(record.category ?? "Reference");
+  const [cover, setCover] = useState("");
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [savingDetails, setSavingDetails] = useState(false);
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const queryClient = useQueryClient();
   const articleRef = useRef<HTMLElement>(null);
 
-  const category = (record.category ?? "Website").toUpperCase();
+  const categoryLabel = (record.category ?? "Website").toUpperCase();
 
   useEffect(() => {
     if (!highlight || !articleRef.current || prefersReducedMotion()) return;
@@ -80,6 +94,102 @@ export function URLCard({
       toast.error("Could not save link");
     }
   };
+
+  const openDetails = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setCategory(record.category ?? "Reference");
+    setCover("");
+    setLocalPreview(null);
+    setPreviewFailed(false);
+    setDetailsOpen(true);
+  };
+
+  const uploadLocalImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Drop an image file.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Image must be under 8 MB.");
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setLocalPreview((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return previewUrl;
+    });
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const response = await fetch("/api/uploads", {
+        method: "POST",
+        body,
+      });
+      const payload = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !payload.url) {
+        throw new Error(payload.error ?? "Could not upload that image.");
+      }
+      setCover(payload.url);
+      toast.success("Image added");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not upload that image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const saveDetails = async () => {
+    const nextCover = cover.trim();
+    if (nextCover && !/^https?:\/\//i.test(nextCover)) {
+      toast.error("Cover must be an http(s) image URL.");
+      return;
+    }
+
+    setSavingDetails(true);
+    const patch = async (body: Record<string, unknown>) => {
+      const response = await fetch(`/api/urls/${record.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
+      return { ok: response.ok, error: payload.error };
+    };
+
+    try {
+      const body: Record<string, unknown> = {
+        category: normalizeCategory(category),
+      };
+      if (nextCover) body.previewImage = nextCover;
+
+      let result = await patch(body);
+      if (!result.ok && nextCover && /category is not allowed/i.test(result.error ?? "")) {
+        result = await patch({ previewImage: nextCover });
+      }
+      if (!result.ok) {
+        throw new Error(result.error ?? "Could not update.");
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["urls"] });
+      toast.success("Saved");
+      setDetailsOpen(false);
+      setLocalPreview(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update.");
+    } finally {
+      setSavingDetails(false);
+    }
+  };
+
+  const shownCover =
+    localPreview ||
+    cover ||
+    (previewFailed ? "" : record.previewImage || "");
 
   const openDelete = (event: React.MouseEvent) => {
     event.preventDefault();
@@ -170,7 +280,7 @@ export function URLCard({
             >
               <div className="px-3.5 pb-3.5">
                 <p className="text-[10px] font-semibold tracking-[0.16em] text-white/70 uppercase">
-                  {category}
+                  {categoryLabel}
                 </p>
                 <h3 className="mt-1 line-clamp-2 text-[15px] leading-snug font-medium text-white">
                   {record.title}
@@ -207,6 +317,14 @@ export function URLCard({
               ) : (
                 <Bookmark className="h-4 w-4" strokeWidth={1.75} />
               )}
+            </button>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15"
+              aria-label="Edit category and cover"
+              onClick={openDetails}
+            >
+              <ImagePlus className="h-4 w-4" strokeWidth={1.75} />
             </button>
             <button
               type="button"
@@ -254,12 +372,145 @@ export function URLCard({
           <button
             type="button"
             className="min-h-9 rounded-[6px] border border-black/15 px-3 text-xs font-medium text-[#333]"
+            onClick={openDetails}
+          >
+            Cover
+          </button>
+          <button
+            type="button"
+            className="min-h-9 rounded-[6px] border border-black/15 px-3 text-xs font-medium text-[#333]"
             onClick={openDelete}
           >
             Delete
           </button>
         </div>
       </article>
+
+      <Modal
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        title="Remember this UI"
+        description="Set a category, drop a screenshot, or paste an image URL. The card shows that image; clicking still opens the site."
+      >
+        <div className="space-y-3">
+          <div>
+            <label htmlFor={`category-${record.id}`} className="mb-1.5 block text-sm text-[var(--color-slate)]">
+              Category
+            </label>
+            <select
+              id={`category-${record.id}`}
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              className="min-h-11 w-full rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--color-cloud)]/55 px-4 text-[var(--color-ink)]"
+            >
+              <option value="">Unsorted</option>
+              {URL_CATEGORIES.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <p className="mb-1.5 text-sm text-[var(--color-slate)]">Cover image</p>
+            <div
+              onDragOver={(event) => {
+                event.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(event) => {
+                event.preventDefault();
+                setDragging(false);
+                const file = event.dataTransfer.files?.[0];
+                if (file) void uploadLocalImage(file);
+              }}
+              className={cn(
+                "relative aspect-[16/9] overflow-hidden rounded-[14px] border transition-colors",
+                dragging
+                  ? "border-[var(--color-ink)] bg-[var(--color-mesh-peach)]/25"
+                  : "border-[var(--border)] bg-[var(--color-cloud)]/70",
+              )}
+            >
+              {shownCover ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={shownCover}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover object-top"
+                  onError={() => {
+                    if (!localPreview && !cover) setPreviewFailed(true);
+                  }}
+                />
+              ) : null}
+              <div
+                className={cn(
+                  "absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-5 text-center",
+                  shownCover && "bg-[linear-gradient(180deg,transparent_30%,rgba(20,16,12,0.55)_100%)] justify-end pb-3",
+                )}
+              >
+                {shownCover ? null : (
+                  <span className="mb-1 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-white/80 text-[var(--color-ink)]">
+                    <ImagePlus className="h-4 w-4" />
+                  </span>
+                )}
+                <p className={cn("text-sm font-medium", shownCover ? "text-white" : "text-[var(--color-ink)]")}>
+                  {uploading ? "Adding screenshot…" : shownCover ? "Replace screenshot" : "Drop a screenshot"}
+                </p>
+                {shownCover ? null : (
+                  <p className="text-xs text-[var(--color-stone)]">PNG, JPG, or WEBP · up to 8 MB</p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className={cn(
+                    "mt-1 rounded-full px-3 py-1.5 text-xs font-medium",
+                    shownCover
+                      ? "bg-white text-[var(--color-ink)]"
+                      : "text-[var(--color-ink)] underline-offset-4 hover:underline",
+                  )}
+                >
+                  Browse files
+                </button>
+              </div>
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="sr-only"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void uploadLocalImage(file);
+                event.target.value = "";
+              }}
+            />
+          </div>
+          <div>
+            <label htmlFor={`cover-${record.id}`} className="mb-1.5 block text-sm text-[var(--color-slate)]">
+              Or paste an image URL
+            </label>
+            <Input
+              id={`cover-${record.id}`}
+              value={cover}
+              onChange={(event) => setCover(event.target.value)}
+              placeholder={record.previewImage ?? "https://…screenshot.png"}
+              autoComplete="off"
+            />
+            <p className="mt-1.5 text-xs text-[var(--color-stone)]">
+              Leave blank to keep the current preview.
+            </p>
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <Button variant="ghost" onClick={() => setDetailsOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => void saveDetails()} disabled={savingDetails || uploading}>
+              {savingDetails ? "Saving…" : "Save"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         open={confirmOpen}

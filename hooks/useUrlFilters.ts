@@ -14,7 +14,14 @@ export function useUrlFilters(urls: UrlRecord[] | undefined) {
     const q = query.trim().toLowerCase();
 
     let next = list;
-    if (chip !== "All" && chip !== "Recent") {
+    if (chip === "Recent") {
+      next = [...list]
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
+        .slice(0, 12);
+    } else if (chip !== "All") {
       next = next.filter((item) => item.category === chip);
     }
 

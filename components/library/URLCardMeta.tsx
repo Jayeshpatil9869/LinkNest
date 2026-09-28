@@ -30,9 +30,11 @@ export function URLCardMeta({ record }: URLCardMetaProps) {
       <span className="truncate text-[13px] leading-none font-medium tracking-[-0.01em] text-[var(--color-ink)]">
         {label}
       </span>
-      <span className="shrink-0 text-[9px] font-semibold tracking-[0.08em] text-[#b0b0b0] uppercase">
-        PRO
-      </span>
+      {record.category ? (
+        <span className="shrink-0 text-[9px] font-semibold tracking-[0.08em] text-[#8a8078] uppercase">
+          {record.category}
+        </span>
+      ) : null}
     </div>
   );
 }

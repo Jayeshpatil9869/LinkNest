@@ -55,6 +55,11 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       };
     };
 
+    const tick = (time: number) => {
+      lenisRef.current?.lenis?.raf(time * 1000);
+    };
+    gsap.ticker.add(tick);
+
     connect();
 
     const onResize = () => ScrollTrigger.refresh();
@@ -62,6 +67,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
 
     return () => {
       cancelAnimationFrame(frame);
+      gsap.ticker.remove(tick);
       detach?.();
       document.documentElement.classList.remove("lenis");
       window.removeEventListener("resize", onResize);
@@ -77,8 +83,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       root
       ref={lenisRef}
       options={{
-        // Let Lenis own its RAF — most reliable for smooth wheel scrolling.
-        autoRaf: true,
+        autoRaf: false,
         duration: 1.05,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,

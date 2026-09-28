@@ -3,6 +3,7 @@
 const { z } = require("zod");
 
 const URL_CATEGORIES = [
+  "Reference",
   "Design",
   "Development",
   "Inspiration",
@@ -41,6 +42,16 @@ const previewRequestSchema = z.object({
   url: urlStringSchema,
 });
 
+const updateUrlSchema = z
+  .object({
+    category: z.string().nullable().optional(),
+    previewImage: z.string().trim().url().nullable().optional(),
+  })
+  .refine(
+    (value) => value.category !== undefined || value.previewImage !== undefined,
+    { message: "Nothing to update." },
+  );
+
 function normalizeCategory(value) {
   if (!value) return null;
   return URL_CATEGORIES.includes(value) ? value : null;
@@ -50,5 +61,6 @@ module.exports = {
   URL_CATEGORIES,
   createUrlSchema,
   previewRequestSchema,
+  updateUrlSchema,
   normalizeCategory,
 };
