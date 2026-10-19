@@ -15,22 +15,21 @@ type SmoothScrollProviderProps = {
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
   const lenisRef = useRef<LenisRef>(null);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(media.matches);
     const sync = () => setReduceMotion(media.matches);
-    sync();
-    setReady(true);
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
 
   useEffect(() => {
-    if (!ready || reduceMotion) return;
+    if (reduceMotion) return;
 
     document.documentElement.classList.add("lenis");
-    gsap.ticker.lagSmoothing(0);
+    // Enable GSAP lag smoothing to absorb frame spikes smoothly
+    gsap.ticker.lagSmoothing(500, 33);
 
     let detach: (() => void) | undefined;
     let frame = 0;
@@ -72,9 +71,9 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       document.documentElement.classList.remove("lenis");
       window.removeEventListener("resize", onResize);
     };
-  }, [ready, reduceMotion]);
+  }, [reduceMotion]);
 
-  if (!ready || reduceMotion) {
+  if (reduceMotion) {
     return <>{children}</>;
   }
 
@@ -88,8 +87,8 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
         syncTouch: false,
-        touchMultiplier: 1.35,
-        wheelMultiplier: 0.92,
+        touchMultiplier: 1.25,
+        wheelMultiplier: 0.95,
         orientation: "vertical",
         gestureOrientation: "vertical",
       }}

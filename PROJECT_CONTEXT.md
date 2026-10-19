@@ -95,8 +95,10 @@ LinkNest/
 │   ├── manifest.ts                          # Dynamic PWA Web App Manifest
 │   ├── apple-icon.tsx                       # Apple touch icon generation
 │   ├── icon.svg & favicon.ico               # Brand icons
-│   └── library/
-│       └── page.tsx                         # Direct library route alias
+│   ├── library/
+│   │   └── page.tsx                         # Direct library route alias
+│   └── share-target/
+│       └── page.tsx                         # Mobile Web Share Target handler & auto-archiver
 │
 ├── backend/                                 # Fastify API Service
 │   ├── package.json                         # Backend standalone scripts & dependencies

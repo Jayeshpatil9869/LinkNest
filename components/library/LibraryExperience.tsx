@@ -18,10 +18,15 @@ export function LibraryExperience() {
   const queryClient = useQueryClient();
   const { data, isLoading, isError, refetch } = useUrls();
   const { query, setQuery, chip, setChip, filtered } = useUrlFilters(data);
+  const [mounted, setMounted] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [initialUrl, setInitialUrl] = useState("");
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const openAdd = (url = "", submitImmediately = false) => {
     setInitialUrl(url);
@@ -102,7 +107,7 @@ export function LibraryExperience() {
                 Saved links
               </h2>
             </div>
-            {!isLoading && !isError && data ? (
+            {mounted && !isLoading && !isError && data ? (
               <p className="text-xs text-[var(--color-stone)] sm:text-sm">
                 {data.length} saved
               </p>
@@ -117,9 +122,9 @@ export function LibraryExperience() {
         </Reveal>
 
         <section className="mt-6 sm:mt-8" aria-label="Saved URLs">
-          {isLoading ? <LoadingGrid /> : null}
+          {!mounted || isLoading ? <LoadingGrid /> : null}
 
-          {isError ? (
+          {mounted && isError ? (
             <Reveal>
               <div className="glass-panel-soft rounded-[16px] px-5 py-8 text-center">
                 <p className="text-[var(--color-slate)]">
@@ -136,13 +141,13 @@ export function LibraryExperience() {
             </Reveal>
           ) : null}
 
-          {!isLoading && !isError && filtered.length === 0 ? (
+          {mounted && !isLoading && !isError && filtered.length === 0 ? (
             <Reveal>
               <EmptyLibrary onAdd={() => openAdd()} hasFilters={hasFilters} />
             </Reveal>
           ) : null}
 
-          {!isLoading && !isError && filtered.length > 0 ? (
+          {mounted && !isLoading && !isError && filtered.length > 0 ? (
             <URLGrid
               urls={filtered}
               highlightId={highlightId}

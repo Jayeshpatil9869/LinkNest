@@ -6,7 +6,15 @@ type URLCardFallbackProps = {
 
 export function URLCardFallback({ record }: URLCardFallbackProps) {
   return (
-    <div className="relative flex h-full w-full flex-col justify-between overflow-hidden bg-[linear-gradient(145deg,#fffbf6_0%,#f7d797_48%,#f7c097_100%)] p-5">
+    <div
+      data-card-img
+      className="relative flex h-full w-full flex-col justify-between overflow-hidden bg-[linear-gradient(145deg,#fffbf6_0%,#f7d797_48%,#f7c097_100%)] p-5 will-change-transform"
+      style={{
+        transformOrigin: "center center",
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
+      }}
+    >
       <div
         className="pointer-events-none absolute inset-0 opacity-45"
         style={{

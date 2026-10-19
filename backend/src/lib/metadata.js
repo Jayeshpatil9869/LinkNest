@@ -54,7 +54,7 @@ function faviconFromHtml(html, base) {
     /<link[^>]+rel=["'](?:shortcut icon|icon|apple-touch-icon)["'][^>]+href=["']([^"']+)["']/i,
   );
   if (match?.[1]) return absoluteUrl(base, match[1]);
-  return absoluteUrl(base, "/favicon.ico");
+  return null;
 }
 
 async function fetchUrlMetadata(rawUrl) {

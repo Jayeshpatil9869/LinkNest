@@ -289,19 +289,19 @@ const UNIFORMS = {
   timeScale: 2.000,
 }
 
-const pendingContextReleases = new WeakMap<HTMLCanvasElement, number>()
-
 export function ShaderBackground({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const pendingRelease = pendingContextReleases.get(canvas)
-    if (pendingRelease !== undefined) window.clearTimeout(pendingRelease)
-    pendingContextReleases.delete(canvas)
-    const gl = canvas.getContext("webgl", { antialias: false })
+    const gl = canvas.getContext("webgl", { antialias: false, powerPreference: "low-power" })
     if (!gl) return
+
+    const onContextLost = (e: Event) => {
+      e.preventDefault()
+    }
+    canvas.addEventListener("webglcontextlost", onContextLost, false)
 
     const compile = (type: number, src: string) => {
       const s = gl.createShader(type)!
@@ -555,13 +555,15 @@ export function ShaderBackground({ className }: { className?: string }) {
       else lastNow = null
     }
     requestRender()
+
     return () => {
       disposed = true
-      cancelAnimationFrame(raf)
+      if (raf !== 0) cancelAnimationFrame(raf)
       resizeObserver.disconnect()
       intersectionObserver.disconnect()
       document.removeEventListener("visibilitychange", onVisibilityChange)
       window.removeEventListener("resize", updateLayout)
+      canvas.removeEventListener("webglcontextlost", onContextLost)
       if (UNIFORMS.cursorEnabled) {
         window.removeEventListener("pointermove", onPointerMove)
         window.removeEventListener("pointercancel", onPointerLeave)
@@ -573,14 +575,6 @@ export function ShaderBackground({ className }: { className?: string }) {
       }
       gl.deleteBuffer(buf)
       gl.deleteProgram(program)
-      const releaseTimer = window.setTimeout(() => {
-        if (pendingContextReleases.get(canvas) !== releaseTimer) return
-        pendingContextReleases.delete(canvas)
-        gl.getExtension("WEBGL_lose_context")?.loseContext()
-        canvas.width = 1
-        canvas.height = 1
-      }, 0)
-      pendingContextReleases.set(canvas, releaseTimer)
     }
   }, [])
 

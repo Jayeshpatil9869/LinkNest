@@ -26,6 +26,7 @@ export function Button({
     <button
       ref={ref}
       type={type}
+      suppressHydrationWarning
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] font-medium transition-[background-color,box-shadow,color] duration-[var(--duration-micro)] ease-[var(--ease-premium)] will-change-transform disabled:pointer-events-none disabled:opacity-50",
         "hover:-translate-y-px",

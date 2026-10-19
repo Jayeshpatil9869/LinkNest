@@ -6,6 +6,7 @@ const IMAGE_CACHE = `images-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
   "/",
+  "/share-target",
   "/favicon.svg",
   "/icons/icon-192.png",
   "/icons/icon-512.png",

@@ -111,6 +111,17 @@ export function PWAInstallModal({
               </div>
             </div>
 
+            {/* Mobile Share Target feature callout */}
+            <div className="mt-4 rounded-[14px] bg-[rgba(247,215,151,0.2)] border border-[rgba(233,165,111,0.35)] p-3 text-left">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-ink)]">
+                <Sparkles className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+                <span>Instant Mobile Share Feature</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-slate)]">
+                Once installed on your phone, LinkNest appears directly in your mobile browser's &ldquo;Share&rdquo; tray. Just tap Share on any webpage to archive it instantly into LinkNest!
+              </p>
+            </div>
+
             {/* Done button */}
             <div className="mt-6">
               <Button

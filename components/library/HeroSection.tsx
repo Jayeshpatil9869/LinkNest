@@ -224,6 +224,7 @@ export function HeroSection({ onAddUrl }: HeroSectionProps) {
                   enterKeyHint="go"
                   autoFocus
                   disabled={sending}
+                  suppressHydrationWarning
                   aria-label="Paste a website URL"
                   className="w-full min-w-0 bg-transparent text-[15px] text-[var(--color-ink)] outline-none ring-0 placeholder:text-[var(--color-stone)] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-70 font-sans"
                 />
@@ -232,6 +233,7 @@ export function HeroSection({ onAddUrl }: HeroSectionProps) {
                 type="submit"
                 size="lg"
                 disabled={sending}
+                suppressHydrationWarning
                 className="w-full shrink-0 rounded-[12px] shadow-sm transition-transform active:scale-[0.98] sm:w-auto sm:rounded-[14px]"
               >
                 {sending ? (

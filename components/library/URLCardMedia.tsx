@@ -16,7 +16,11 @@ let refreshTimer = 0;
 
 function refreshAfterImage() {
   window.clearTimeout(refreshTimer);
-  refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 120);
+  refreshTimer = window.setTimeout(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      ScrollTrigger.refresh();
+    }
+  }, 300);
 }
 
 type URLCardMediaProps = {
@@ -41,7 +45,8 @@ export function URLCardMedia({ record, className }: URLCardMediaProps) {
     () => {
       const frame = frameRef.current;
       const layer = layerRef.current;
-      if (!frame || !layer || prefersReducedMotion() || failed) return;
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+      if (!frame || !layer || prefersReducedMotion() || failed || isMobile) return;
 
       gsap.fromTo(
         layer,
@@ -74,12 +79,18 @@ export function URLCardMedia({ record, className }: URLCardMediaProps) {
         <div ref={layerRef} className="absolute inset-x-0 top-0 h-[124%] w-full will-change-transform">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            data-card-img
             src={src}
             alt={`Preview of ${record.title}`}
             className={cn(
-              "h-full w-full object-cover object-top transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]",
+              "h-full w-full object-cover object-top will-change-transform transition-opacity duration-300",
               loaded ? "opacity-100" : "opacity-0",
             )}
+            style={{
+              transformOrigin: "center center",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+            }}
             loading="lazy"
             decoding="async"
             onLoad={() => {

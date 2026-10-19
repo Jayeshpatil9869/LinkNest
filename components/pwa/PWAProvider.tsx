@@ -28,13 +28,9 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const pwa = usePWA();
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
 
-  // Register service worker
+  // Register service worker for PWA installability and Web Share Target support
   useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      "serviceWorker" in navigator &&
-      process.env.NODE_ENV === "production"
-    ) {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((reg) => {
@@ -82,7 +78,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Web Share Target API query parameter handler
+  // Web Share Target API query parameter handler for root /
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -92,12 +88,15 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     const sharedTitle = searchParams.get("title") || "";
     const sharedText = searchParams.get("text") || "";
 
-    if (action === "share" || sharedUrl || action === "add") {
-      // Find actual URL from text if url is empty
+    if (action === "share" || sharedUrl || sharedText || action === "add") {
+      // Find actual URL from text if url parameter is empty
       let targetUrl = sharedUrl;
       if (!targetUrl && sharedText) {
         const urlMatch = sharedText.match(/https?:\/\/[^\s]+/i);
         if (urlMatch) targetUrl = urlMatch[0];
+        else if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(sharedText.trim())) {
+          targetUrl = `https://${sharedText.trim()}`;
+        }
       }
 
       window.setTimeout(() => {
@@ -110,11 +109,49 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
             },
           }),
         );
-      }, 300);
+      }, 400);
 
       // Clean up search params without full page reload
       const newUrl = window.location.pathname;
       window.history.replaceState({}, "", newUrl);
+    }
+  }, []);
+
+  // Sync offline queue if items were saved during mobile share while offline
+  useEffect(() => {
+    if (typeof window === "undefined" || !navigator.onLine) return;
+
+    try {
+      const rawQueue = localStorage.getItem("linknest_offline_queue");
+      if (!rawQueue) return;
+      const queue = JSON.parse(rawQueue);
+      if (Array.isArray(queue) && queue.length > 0) {
+        toast.promise(
+          Promise.all(
+            queue.map((item) =>
+              fetch("/api/urls", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  url: item.url,
+                  title: item.title,
+                  tags: ["Mobile Share", "Offline Sync"],
+                }),
+              }),
+            ),
+          ).then(() => {
+            localStorage.removeItem("linknest_offline_queue");
+            window.dispatchEvent(new Event("linknest:refresh-urls"));
+          }),
+          {
+            loading: `Syncing ${queue.length} offline saved link${queue.length > 1 ? "s" : ""}...`,
+            success: "All offline shared links synced to your library!",
+            error: "Could not sync some offline links.",
+          },
+        );
+      }
+    } catch (e) {
+      console.warn("[PWA] Offline queue sync error:", e);
     }
   }, []);
 

@@ -87,6 +87,7 @@ export function LibraryToolbar({
             onChange={(event) => onQueryChange(event.target.value)}
             onFocus={pulseFocus}
             placeholder="Search title, domain, or notes"
+            suppressHydrationWarning
             className={cn(
               "h-10 w-full rounded-[10px] border border-transparent bg-[var(--color-cloud)]/55 pr-10 pl-9 sm:h-11 sm:rounded-[12px] sm:pl-10",
               "text-[14px] text-[var(--color-ink)] outline-none ring-0 placeholder:text-[var(--color-stone)]",
@@ -98,6 +99,7 @@ export function LibraryToolbar({
             <button
               type="button"
               data-clear-search
+              suppressHydrationWarning
               className="absolute top-1/2 right-2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[var(--color-stone)] transition-colors hover:bg-[var(--color-ink)]/8 hover:text-[var(--color-ink)] sm:right-2.5"
               aria-label="Clear search"
               onClick={clearSearch}
@@ -119,6 +121,7 @@ export function LibraryToolbar({
           className="-mx-0.5 flex gap-1.5 overflow-x-auto px-0.5 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:max-w-[58%] lg:flex-wrap lg:overflow-visible lg:px-0"
           role="tablist"
           aria-label="Filter library"
+          suppressHydrationWarning
         >
           {CHIPS.map((item) => {
             const selected = chip === item;
@@ -128,6 +131,7 @@ export function LibraryToolbar({
                 type="button"
                 role="tab"
                 aria-selected={selected}
+                suppressHydrationWarning
                 ref={(node) => {
                   if (node) chipRefs.current.set(item, node);
                   else chipRefs.current.delete(item);

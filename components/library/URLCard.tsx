@@ -213,20 +213,199 @@ export function URLCard({
     }
   };
 
+  const onCardMouseEnter = () => {
+    if (prefersReducedMotion() || !articleRef.current) return;
+    const card = articleRef.current;
+    const img = card.querySelector<HTMLElement>("[data-card-img]");
+    const mediaFrame = card.querySelector<HTMLElement>("[data-card-media-frame]");
+    const shadow = card.querySelector<HTMLElement>("[data-card-shadow]");
+    const overlay = card.querySelector<HTMLElement>("[data-card-overlay]");
+    const cta = card.querySelector<HTMLElement>("[data-card-cta]");
+    const info = card.querySelector<HTMLElement>("[data-card-info]");
+    const actions = card.querySelector<HTMLElement>("[data-card-actions]");
+
+    if (img) {
+      // Silky-smooth cinematic zoom in on hover
+      gsap.to(img, {
+        scale: 1.08,
+        duration: 0.95,
+        ease: "power3.out",
+        force3D: true,
+        overwrite: "auto",
+      });
+    }
+
+    if (mediaFrame) {
+      gsap.to(mediaFrame, {
+        y: -4,
+        duration: 0.65,
+        ease: "power3.out",
+        force3D: true,
+        overwrite: "auto",
+      });
+    }
+
+    if (shadow) {
+      gsap.to(shadow, {
+        opacity: 1,
+        duration: 0.65,
+        ease: "power3.out",
+        overwrite: "auto",
+      });
+    }
+
+    if (overlay) {
+      gsap.to(overlay, {
+        opacity: 1,
+        duration: 0.45,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    }
+
+    if (cta) {
+      gsap.to(cta, {
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 0.5,
+        ease: "power3.out",
+        force3D: true,
+        overwrite: "auto",
+      });
+    }
+
+    if (info) {
+      gsap.to(info, {
+        y: 0,
+        opacity: 1,
+        duration: 0.45,
+        ease: "power3.out",
+        force3D: true,
+        overwrite: "auto",
+      });
+    }
+
+    if (actions) {
+      gsap.to(actions, {
+        opacity: 1,
+        duration: 0.4,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    }
+  };
+
+  const onCardMouseLeave = () => {
+    if (prefersReducedMotion() || !articleRef.current) return;
+    const card = articleRef.current;
+    const img = card.querySelector<HTMLElement>("[data-card-img]");
+    const mediaFrame = card.querySelector<HTMLElement>("[data-card-media-frame]");
+    const shadow = card.querySelector<HTMLElement>("[data-card-shadow]");
+    const overlay = card.querySelector<HTMLElement>("[data-card-overlay]");
+    const cta = card.querySelector<HTMLElement>("[data-card-cta]");
+    const info = card.querySelector<HTMLElement>("[data-card-info]");
+    const actions = card.querySelector<HTMLElement>("[data-card-actions]");
+
+    if (img) {
+      // Silky-smooth cinematic zoom out when cursor leaves
+      gsap.to(img, {
+        scale: 1.0,
+        duration: 0.85,
+        ease: "power3.out",
+        force3D: true,
+        overwrite: "auto",
+      });
+    }
+
+    if (mediaFrame) {
+      gsap.to(mediaFrame, {
+        y: 0,
+        duration: 0.75,
+        ease: "power3.out",
+        force3D: true,
+        overwrite: "auto",
+      });
+    }
+
+    if (shadow) {
+      gsap.to(shadow, {
+        opacity: 0,
+        duration: 0.75,
+        ease: "power3.out",
+        overwrite: "auto",
+      });
+    }
+
+    if (overlay) {
+      gsap.to(overlay, {
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    }
+
+    if (cta) {
+      gsap.to(cta, {
+        y: 6,
+        opacity: 0,
+        scale: 0.96,
+        duration: 0.35,
+        ease: "power3.out",
+        force3D: true,
+        overwrite: "auto",
+      });
+    }
+
+    if (info) {
+      gsap.to(info, {
+        y: 6,
+        opacity: 0,
+        duration: 0.35,
+        ease: "power3.out",
+        force3D: true,
+        overwrite: "auto",
+      });
+    }
+
+    if (actions) {
+      gsap.to(actions, {
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    }
+  };
+
   return (
     <>
       <article
         ref={articleRef}
         id={`url-${record.id}`}
+        onMouseEnter={onCardMouseEnter}
+        onMouseLeave={onCardMouseLeave}
+        onFocus={onCardMouseEnter}
+        onBlur={onCardMouseLeave}
         className={cn(
-          "group relative transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          "motion-safe:md:hover:-translate-y-1",
+          "group relative",
           highlight &&
             "rounded-[8px] ring-2 ring-black/15 ring-offset-4 ring-offset-[var(--background)]",
-          removing && "scale-[0.98] opacity-0",
+          removing && "scale-[0.98] opacity-0 transition-[opacity,transform] duration-300",
         )}
       >
-        <div className="relative overflow-hidden rounded-[6px]">
+        <div className="relative">
+          {/* Hardware-accelerated ambient shadow layer for silky 60/120fps elevation */}
+          <div
+            data-card-shadow
+            className="pointer-events-none absolute -inset-0.5 rounded-[8px] opacity-0 shadow-[0_22px_48px_rgba(28,22,18,0.16)] will-change-[opacity]"
+            aria-hidden
+          />
+          <div
+            data-card-media-frame
+            className="relative overflow-hidden rounded-[6px] will-change-transform shadow-[0_4px_16px_rgba(28,22,18,0.05)]"
+          >
           <a
             href={record.url}
             target="_blank"
@@ -238,31 +417,19 @@ export function URLCard({
 
             {/* Awwwards hover: dark gradient wash */}
             <div
-              className={cn(
-                "pointer-events-none absolute inset-0 hidden md:block",
-                "bg-[linear-gradient(180deg,rgba(20,16,12,0.15)_0%,rgba(20,16,12,0.55)_48%,rgba(12,10,8,0.88)_100%)]",
-                "opacity-0 transition-opacity duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "group-hover:opacity-100 group-focus-within:opacity-100",
-              )}
+              data-card-overlay
+              className="pointer-events-none absolute inset-0 hidden md:block bg-[linear-gradient(180deg,rgba(20,16,12,0.15)_0%,rgba(20,16,12,0.55)_48%,rgba(12,10,8,0.88)_100%)] opacity-0 will-change-[opacity]"
               aria-hidden
             />
 
-            {/* Center CTA — Open site (LinkNest equivalent of Vote Now) */}
+            {/* Center CTA — Open site */}
             <div
-              className={cn(
-                "pointer-events-none absolute inset-0 hidden items-center justify-center md:flex",
-                "opacity-0 transition-[opacity,transform] duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "group-hover:opacity-100 group-focus-within:opacity-100",
-              )}
+              data-card-cta
+              className="pointer-events-none absolute inset-0 hidden items-center justify-center md:flex opacity-0 will-change-[transform,opacity]"
+              style={{ transform: "translate3d(0, 6px, 0) scale(0.96)" }}
             >
               <span
-                className={cn(
-                  "inline-flex translate-y-2 items-center gap-2.5 rounded-[4px] bg-white px-5 py-3",
-                  "text-[12px] font-semibold tracking-[0.12em] text-[#111] uppercase",
-                  "shadow-[0_12px_40px_rgba(0,0,0,0.35)]",
-                  "transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  "group-hover:translate-y-0 group-focus-within:translate-y-0",
-                )}
+                className="inline-flex items-center gap-2.5 rounded-[4px] bg-white px-5 py-3 text-[12px] font-semibold tracking-[0.12em] text-[#111] uppercase shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
               >
                 <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
                 Open site
@@ -271,12 +438,9 @@ export function URLCard({
 
             {/* Bottom info bar — category + title; actions sit outside the link */}
             <div
-              className={cn(
-                "pointer-events-none absolute inset-x-0 bottom-0 hidden pr-28 md:block",
-                "translate-y-2 opacity-0 transition-[opacity,transform] duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "group-hover:translate-y-0 group-hover:opacity-100",
-                "group-focus-within:translate-y-0 group-focus-within:opacity-100",
-              )}
+              data-card-info
+              className="pointer-events-none absolute inset-x-0 bottom-0 hidden pr-28 md:block opacity-0 will-change-[transform,opacity]"
+              style={{ transform: "translate3d(0, 6px, 0)" }}
             >
               <div className="px-3.5 pb-3.5">
                 <p className="text-[10px] font-semibold tracking-[0.16em] text-white/70 uppercase">
@@ -291,11 +455,8 @@ export function URLCard({
 
           {/* Right actions — Awwwards-style icon cluster */}
           <div
-            className={cn(
-              "absolute right-2 bottom-2.5 z-10 hidden items-center md:flex",
-              "opacity-0 transition-opacity duration-[320ms]",
-              "group-hover:opacity-100 group-focus-within:opacity-100",
-            )}
+            data-card-actions
+            className="absolute right-2 bottom-2.5 z-10 hidden items-center md:flex opacity-0 will-change-[opacity]"
           >
             <a
               href={record.url}
@@ -349,8 +510,9 @@ export function URLCard({
             </span>
           ) : null}
         </div>
+      </div>
 
-        <URLCardMeta record={record} />
+      <URLCardMeta record={record} />
 
         <div className="mt-2 flex items-center gap-2 md:hidden">
           <a

@@ -59,10 +59,12 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
       },
     ],
-    // Web Share Target API: enables sharing links directly into LinkNest
+    id: "/",
+    // Web Share Target API: enables sharing links directly into LinkNest from any mobile browser/app
     share_target: {
-      action: "/",
+      action: "/share-target",
       method: "GET",
+      enctype: "application/x-www-form-urlencoded",
       params: {
         title: "title",
         text: "text",

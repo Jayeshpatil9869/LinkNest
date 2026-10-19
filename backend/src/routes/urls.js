@@ -17,6 +17,7 @@ const {
 
 async function urlsRoutes(fastify) {
   fastify.get("/urls", async (_request, reply) => {
+    reply.header("Cache-Control", "public, max-age=5, stale-while-revalidate=59");
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from("urls")
