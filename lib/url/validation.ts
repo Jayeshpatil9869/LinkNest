@@ -17,20 +17,7 @@ export const urlStringSchema = z
     }
   }, "Enter a valid http(s) URL.");
 
-const optionalUrlSchema = z
-  .string()
-  .trim()
-  .nullable()
-  .optional()
-  .transform((val) => {
-    if (!val || !val.trim()) return null;
-    try {
-      new URL(val);
-      return val;
-    } catch {
-      return null;
-    }
-  });
+const optionalUrlSchema = z.string().trim().nullable().optional();
 
 export const createUrlSchema = z.object({
   url: urlStringSchema,
