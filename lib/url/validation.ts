@@ -17,14 +17,29 @@ export const urlStringSchema = z
     }
   }, "Enter a valid http(s) URL.");
 
+const optionalUrlSchema = z
+  .string()
+  .trim()
+  .nullable()
+  .optional()
+  .transform((val) => {
+    if (!val || !val.trim()) return null;
+    try {
+      new URL(val);
+      return val;
+    } catch {
+      return null;
+    }
+  });
+
 export const createUrlSchema = z.object({
   url: urlStringSchema,
   title: z.string().trim().max(200).optional(),
   description: z.string().trim().max(600).nullable().optional(),
   category: z.string().nullable().optional(),
   tags: z.array(z.string().trim().min(1).max(40)).max(12).optional(),
-  faviconUrl: z.string().url().nullable().optional(),
-  previewImage: z.string().url().nullable().optional(),
+  faviconUrl: optionalUrlSchema,
+  previewImage: optionalUrlSchema,
   coverImage: z
     .string()
     .trim()

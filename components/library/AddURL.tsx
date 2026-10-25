@@ -55,7 +55,7 @@ export function AddURL({
       url: "",
       title: "",
       description: "",
-      category: "Reference",
+      category: "",
       tags: [],
       coverImage: "",
     },
@@ -95,6 +95,21 @@ export function AddURL({
       }
 
       const record = (await response.json()) as UrlRecord;
+
+      // 1. Immediately update React Query state so the card renders instantaneously
+      queryClient.setQueryData<UrlRecord[]>(["urls"], (prev) => {
+        const current = prev ?? [];
+        if (current.some((item) => item.id === record.id)) return current;
+        return [record, ...current];
+      });
+
+      // 2. Dispatch event for localStorage persistence and cross-component sync
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("linknest:url-added", { detail: record }),
+        );
+      }
+
       await queryClient.invalidateQueries({ queryKey: ["urls"] });
       toast.success("Saved to library");
       onSaved(record);
@@ -177,7 +192,7 @@ export function AddURL({
       url: seed,
       title: "",
       description: "",
-      category: "Reference",
+      category: "",
       tags: [],
       coverImage: "",
     });

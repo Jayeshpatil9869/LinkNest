@@ -17,7 +17,7 @@ const {
 
 async function urlsRoutes(fastify) {
   fastify.get("/urls", async (_request, reply) => {
-    reply.header("Cache-Control", "public, max-age=5, stale-while-revalidate=59");
+    reply.header("Cache-Control", "no-cache, no-store, must-revalidate");
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from("urls")
@@ -60,7 +60,9 @@ async function urlsRoutes(fastify) {
     }
 
     const body = parsed.data;
-    const normalized = normalizeUrl(body.url);
+    const rawUrl = body.url.trim();
+    const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+    const normalized = normalizeUrl(fullUrl);
     const supabase = getSupabase();
 
     const existing = await findByNormalized(supabase, normalized);
@@ -68,9 +70,9 @@ async function urlsRoutes(fastify) {
       return reply.code(409).send({ code: "duplicate", url: existing });
     }
 
-    const domain = extractDomain(body.url);
+    const domain = extractDomain(fullUrl);
     const insert = recordToInsert({
-      url: body.url.trim(),
+      url: fullUrl,
       normalizedUrl: normalized,
       title: body.title?.trim() || domain,
       description: body.description?.trim() || null,
@@ -78,16 +80,29 @@ async function urlsRoutes(fastify) {
       faviconUrl:
         body.faviconUrl ??
         `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
-      previewImage: resolvePreviewImage(body.url, body.previewImage),
+      previewImage: resolvePreviewImage(fullUrl, body.previewImage),
       category: normalizeCategory(body.category),
       tags: body.tags ?? [],
     });
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("urls")
       .insert(insert)
       .select("*")
       .single();
+
+    if (error && error.code === "23514") {
+      // Check constraint violation (e.g. Reference category not yet in DB schema)
+      // Fall back safely to "Resources" or null so user's bookmark is NEVER rejected
+      insert.category = insert.category === "Reference" ? "Resources" : null;
+      const retry = await supabase
+        .from("urls")
+        .insert(insert)
+        .select("*")
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       if (error.code === "23505") {
@@ -95,12 +110,6 @@ async function urlsRoutes(fastify) {
         if (dupe) {
           return reply.code(409).send({ code: "duplicate", url: dupe });
         }
-      }
-      if (error.code === "23514") {
-        return reply.code(400).send({
-          error:
-            "This category is not allowed yet. Run backend/sql/2026-09-28-reference-category.sql in Supabase.",
-        });
       }
       requestLog(fastify, error);
       return reply.code(500).send({ error: "Failed to create url." });
@@ -127,21 +136,27 @@ async function urlsRoutes(fastify) {
     }
 
     const supabase = getSupabase();
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("urls")
       .update(patch)
       .eq("id", id)
       .select("*")
       .maybeSingle();
 
+    if (error && error.code === "23514") {
+      patch.category = patch.category === "Reference" ? "Resources" : null;
+      const retry = await supabase
+        .from("urls")
+        .update(patch)
+        .eq("id", id)
+        .select("*")
+        .maybeSingle();
+      data = retry.data;
+      error = retry.error;
+    }
+
     if (error) {
       requestLog(fastify, error);
-      if (error.code === "23514") {
-        return reply.code(400).send({
-          error:
-            "This category is not allowed yet. Run backend/sql/2026-09-28-reference-category.sql in Supabase.",
-        });
-      }
       return reply.code(500).send({ error: "Failed to update url." });
     }
     if (!data) {
@@ -179,14 +194,16 @@ async function urlsRoutes(fastify) {
       });
     }
 
-    const normalizedUrl = normalizeUrl(parsed.data.url);
+    const rawUrl = parsed.data.url.trim();
+    const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+    const normalizedUrl = normalizeUrl(fullUrl);
     const supabase = getSupabase();
     const existing = await findByNormalized(supabase, normalizedUrl);
     if (existing) {
       return reply.code(409).send({ code: "duplicate", url: existing });
     }
 
-    const preview = await fetchUrlMetadata(parsed.data.url);
+    const preview = await fetchUrlMetadata(fullUrl);
     return preview;
   });
 }

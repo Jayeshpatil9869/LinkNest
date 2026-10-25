@@ -58,11 +58,13 @@ function faviconFromHtml(html, base) {
 }
 
 async function fetchUrlMetadata(rawUrl) {
-  const normalizedUrl = normalizeUrl(rawUrl);
-  const domain = extractDomain(rawUrl);
+  const trimmed = rawUrl.trim();
+  const fullUrl = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  const normalizedUrl = normalizeUrl(fullUrl);
+  const domain = extractDomain(fullUrl);
   const fallbackImage = screenshotUrl(normalizedUrl);
   const fallback = {
-    url: rawUrl.trim(),
+    url: fullUrl,
     normalizedUrl,
     title: domain,
     description: null,
@@ -114,7 +116,7 @@ async function fetchUrlMetadata(rawUrl) {
       faviconFromHtml(html, normalizedUrl) ?? fallback.faviconUrl;
 
     return {
-      url: rawUrl.trim(),
+      url: fullUrl,
       normalizedUrl,
       title,
       description,

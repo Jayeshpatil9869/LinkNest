@@ -73,12 +73,18 @@ export function LibraryExperience() {
   };
 
   const focusRecord = (record: UrlRecord) => {
+    if (query.trim()) setQuery("");
+    if (chip !== "All" && record.category && chip !== record.category) {
+      setChip("All");
+    }
     setHighlightId(record.id);
     window.requestAnimationFrame(() => {
-      document.getElementById(`url-${record.id}`)?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      window.setTimeout(() => {
+        document.getElementById(`url-${record.id}`)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 60);
     });
     window.setTimeout(() => setHighlightId(null), 2400);
   };

@@ -28,7 +28,7 @@ export function setCachedUrls(urls: UrlRecord[]) {
 }
 
 async function fetchUrls(): Promise<UrlRecord[]> {
-  const response = await fetch("/api/urls");
+  const response = await fetch("/api/urls", { cache: "no-store" });
   if (!response.ok) {
     throw new Error("Unable to load your library.");
   }
@@ -46,6 +46,8 @@ export function useUrls() {
     const cached = getCachedUrls();
     if (cached && cached.length > 0) {
       queryClient.setQueryData<UrlRecord[]>(["urls"], (current) => current ?? cached);
+      // Immediately revalidate in the background to sync fresh server data
+      void queryClient.invalidateQueries({ queryKey: ["urls"] });
     }
   }, [queryClient]);
 
